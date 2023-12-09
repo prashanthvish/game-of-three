@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Three</title>
+
+    <!-- Not Recommended: Use Tailwind CLI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body x-data>
+
+    <div class="min-h-screen w-full bg-slate-700 p-20">
+
+        <div class="mb-10">
+            <h1 id="number" class="text-9xl text-white/75">0</h1>
+            <p class="text-lg text-white/60">Whole Number</p>
+        </div>
+        <div class="mb-10">
+            <p id="message" class="text-green-200"></p>
+        </div>
+
+        <div class="mb-10 flex flex-row">
+            <button id="increment"
+                class="btn mr-6 rounded-sm bg-blue-600 p-9 py-10 py-3 text-white/75 hover:bg-blue-700">(+1)
+                Increment</button>
+            <button id="stayZero"
+                class="btn mr-6 rounded-sm bg-blue-600 p-9 py-10 py-3 text-white/75 hover:bg-blue-700">(0)
+                stayZero</button>
+            <button id="decrement"
+                class="btn mr-6 rounded-sm bg-blue-600 p-9 py-10 py-3 text-white/75 hover:bg-blue-700">(-1)
+                Decrement</button>
+        </div>
+
+        <div class="mb-10">
+            <p class="text-white/75">Playing As: <span id="myId"></span></p>
+        </div>
+
+        <div>
+            <p class="p-2 pl-0 text-lg text-white/60 font-bold">Timeline</p>
+            <table id="activity" class="border-1 border-collapse border-white">
+                <tr>
+                    <th class="border-collapse border-2 border-white/50 p-3 text-white/75">Player</th>
+                    <th class="border-collapse border-2 border-white/50 p-3 text-white/75">Number</th>
+                    <th class="border-collapse border-2 border-white/50 p-3 text-white/75">Action</th>
+                    <th class="border-collapse border-2 border-white/50 p-3 text-white/75">Result</th>
+                </tr>
+
+            </table>
+        </div>
+    </div>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        'use strict'
+
+        let myId = document.querySelector('#myId');
+        let numberElem = document.querySelector('#number');
+        let messageElem = document.querySelector('#message');
+        let activityTable = document.querySelector('#activity');
+        let buttons = document.querySelectorAll('.btn');
+        let incrementBtn = document.querySelector('#increment');
+        let decrementBtn = document.querySelector('#decrement');
+        let stayZeroBtn = document.querySelector('#stayZero')
+
+        const socket = io('http://localhost:3000');
+
+
+        socket.on('init', ({ id, number, message }) => {
+            myId.textContent = id;
+            numberElem.textContent = number;
+            messageElem.textContent = message;
+        })
+
+        socket.on('update', ({ player, number, action }) => {
+            const classes = ['border-collapse', 'border-2', 'border-white/50', 'p-3', 'text-white/75'];
+
+            const playerCell = document.createElement('td');
+            playerCell.innerText = player === myId.textContent ? `${player} (you)` : player;
+            playerCell.className = classes.join(' ');
+
+            const numberCell = document.createElement('td');
+            numberCell.innerText = numberElem.textContent;
+            numberCell.className = classes.join(' ');
+
+            const actionCell = document.createElement('td');
+            actionCell.innerText = action;
+            actionCell.className = classes.join(' ');
+
+            const resultCell = document.createElement('td');
+            resultCell.innerText = number;
+            resultCell.className = classes.join(' ');
+
+            const row = document.createElement('tr');
+            row.appendChild(playerCell);
+            row.appendChild(numberCell);
+            row.appendChild(actionCell);
+            row.appendChild(resultCell);
+
+            activityTable.appendChild(row);
+            numberElem.textContent = number;
+        })
+
+
+        socket.on('turn', ({ message }) => {
+            messageElem.textContent = message;
+            buttons.forEach(btn => {
+                btn.removeAttribute('disabled')
+                btn.classList.remove('cursor-not-allowed')
+            })
+        })
+
+        socket.on('wait', ({ message }) => {
+            messageElem.textContent = message;
+            buttons.forEach(btn => {
+                btn.setAttribute('disabled', 'disabled')
+                btn.classList.add('cursor-not-allowed')
+            })
+        })
+
+        socket.on('gameover', ({ message }) => {
+            messageElem.textContent = message;
+            buttons.forEach(btn => {
+                btn.setAttribute('disabled', 'disabled')
+                btn.classList.add('cursor-not-allowed')
+            })
+        })
+
+        const move = (action) => {
+            socket.emit('move', { action, number: numberElem.textContent });
+        }
+
+        incrementBtn.addEventListener('click', () => move('increment'));
+        decrementBtn.addEventListener('click', () => move('decrement'));
+        stayZeroBtn.addEventListener('click', () => move('stayZero'));
+
+
+    </script>
+
+
+</body>
+
+</html>
