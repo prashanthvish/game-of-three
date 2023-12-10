@@ -34,6 +34,7 @@ npm run test
 
 ### Demo
 A screen-recording captured while two players were playing the game on two different browser tabs.
+
 [demo.webm](https://github.com/prashanthvish/game-of-three/assets/4738905/ec4a3fea-a470-4fa8-84ed-f9d1bd7f2417)
 
 
