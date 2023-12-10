@@ -32,9 +32,16 @@ npm run test
 ```
 
 
+### Demo
+A screen-recording captured while two players were playing the game on two different browser tabs.
+
+<video src='./assets/demo.webm' width=180/>
+
+
+
 ### Architecture Diagram
 
-![diagram](./diagrams/diagram.png)
+![diagram](./assets/diagram.png)
 
 
 ### Assumptions
